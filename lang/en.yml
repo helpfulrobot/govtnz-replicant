@@ -1,0 +1,7 @@
+en:
+  Replicant:
+    USAGE: 'The following <b>action</b>s are available (bold indicates query parameters which may be used):'
+    DUMP: 'Dump database to file <b>path</b>/<b>filename</b> which defaults to assets/replicant/yyyymmdd-hhmmss.sql'
+    LOCAL: 'List all fetched database files. Click to restore.'
+    FETCH: 'Fetch latest <b>number</b> of dumps from <b>remote</b> server e.g. http://beta.govt.nz/. <number> defaults to 1 (latest).'
+    RESTORE: 'Restore a database dump by <b>filename</b>. If filename not supplied will restore latest dump found.'

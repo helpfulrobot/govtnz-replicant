@@ -1,0 +1,7 @@
+---
+Name: Replicant
+---
+Replicant:
+  protocols:
+    http: http
+    https: https

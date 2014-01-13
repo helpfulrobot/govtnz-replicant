@@ -1,0 +1,7 @@
+---
+Name: replicant
+After: framework/routes#coreroutes
+---
+Director:
+  rules:
+    'replicant//$Action!/$ID': 'ReplicantController'
