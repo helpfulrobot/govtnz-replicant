@@ -64,6 +64,10 @@ class ReplicantActionListFiles extends ReplicantAction
 
 	/**
 	 * Return a list of files from the provided as the requested mimeType (default text/html unordered list, otherwise application/json structure).
+	 *
+	 * @SideEffects:
+	 *  Writes content to output buffer.
+	 *
 	 * @param $path
 	 * @param array $mimeTypes
 	 * @return number of files listed
@@ -87,7 +91,7 @@ class ReplicantActionListFiles extends ReplicantAction
 			foreach ($files as $this->Path => $fileName) {
 				// strip extension, not needed
 				$body .= '<li>' . $fileName . '&nbsp;&nbsp;
-                            <a href="/replicant/files/' . FileSystemTools::strip_extension($fileName) . '">download</a>&nbsp;&nbsp;
+                            <a href="/replicant/files/' . $fileName . '">download</a>&nbsp;&nbsp;
                             <a onclick="javascript: return confirm("Are you sure you want to restore ' . $fileName . ' to this server?);" href="/dev/tasks/ReplicantTask?action=restore&filename=' . $fileName . '">restore to this server</a>
                           </li>';
 			}

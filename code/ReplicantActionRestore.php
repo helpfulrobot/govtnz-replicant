@@ -59,7 +59,11 @@ class ReplicantActionRestore extends ReplicantAction
 
 	/**
 	 * Restore the database from a local file.
-	 * @return bool
+	 *
+	 * @SideEffects:
+	 *  Restores dump file to local database
+	 *
+	 * @return bool true on success, false on fail
 	 * @throws PermissionFailureException
 	 * @throws Exception
 	 */
@@ -69,26 +73,39 @@ class ReplicantActionRestore extends ReplicantAction
 
 		$fullPath = FileSystemTools::build_path($this->Path, $this->FileName);
 		if (!file_exists($fullPath)) {
-			$this->failed("No such file '$fullPath'")->output();
+			$this->failed("No such file '$fullPath'");
 			throw new Exception("No such file $fullPath");
 		}
-
-		$command = sprintf("%s --host=%s --user=%s --password=%s %s < %s",
-			Replicant::config()->get('path_to_mysql'),
-			DatabaseTools::getDBCredential('Server'),
-			DatabaseTools::getDBCredential('UserName'),
-			DatabaseTools::getDBCredential('Password'),
-			$this->Database,
-			$fullPath
-		);
-		$this->step("Restoring database '$this->UserName@$this->RemoteHost:$this->Database' from '$fullPath'")->output();
+		// detect if we should use GZIP from the file name terminal extension being '.gz'
+		if (substr($this->FileName, -3) == '.gz') {
+			$this->UseGZIP = true;
+			$command = sprintf("gunzip < %s | %s --host=%s --user=%s --password=%s %s ",
+				$fullPath,
+				Replicant::config()->get('path_to_mysql'),
+				DatabaseTools::getDBCredential('Server'),
+				DatabaseTools::getDBCredential('UserName'),
+				DatabaseTools::getDBCredential('Password'),
+				$this->Database
+			);
+		} else {
+			$command = sprintf("%s --host=%s --user=%s --password=%s %s < %s",
+				Replicant::config()->get('path_to_mysql'),
+				DatabaseTools::getDBCredential('Server'),
+				DatabaseTools::getDBCredential('UserName'),
+				DatabaseTools::getDBCredential('Password'),
+				$this->Database,
+				$fullPath
+			);
+		}
+		$this->step("Restoring database '$this->UserName@$this->RemoteHost:$this->Database' from '$fullPath'");
 		if ($this->system($command, $retval)) {
 			// we need a new one here as existing one will be gone when database
 //            ReplicantActionRestore::create(static::ActionRestore, "", static::ResultMessageSuccess, "Restoring database '$this->UserName@$this->RemoteHost:$this->Database' from '$fullPath'");
 			$this->success("Restored database '$this->Database' from '$fullPath'");
-
+			return true;
 		} else {
 			$this->failed("Failed, command returned #$retval");
+			return false;
 		}
 	}
 }

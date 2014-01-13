@@ -40,7 +40,7 @@ class Replicant extends Object
 	 */
 	public static function asset_path()
 	{
-		return Director::getAbsFile(static::$files_path);
+		return Director::getAbsFile(Replicant::config()->get('files_path'));
 	}
 
 	/**
@@ -52,9 +52,9 @@ class Replicant extends Object
 	 * @param null $password
 	 * @return ReplicantTransport
 	 */
-	public static function transportFactory($protocol, $host, $username = null, $password = null)
+	public static function transportFactory($protocol, $host, $proxy = null, $username = null, $password = null)
 	{
-		return new static::$transport_class($protocol, $host, $username, $password);
+		return new static::$transport_class($protocol, $host, $proxy, $username, $password);
 	}
 
 }

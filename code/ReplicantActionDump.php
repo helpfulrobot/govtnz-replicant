@@ -24,6 +24,7 @@ class ReplicantActionDump extends ReplicantAction
 		$fields->addFieldToTab('Root.Main', $hide[] = new TextField('Database', 'Database', DatabaseTools::getDBCredential('Database')));
 		$fields->addFieldToTab('Root.Main', $hide[] = new TextField('UserName', 'User name', Member::currentUser()->Email));
 		$fields->addFieldToTab('Root.Main', $hide[] = new PasswordField('Password')); // this is not saved anywhere
+		$fields->addFieldToTab('Root.Main', new CheckboxField('UseGZIP', "Use gzip compression", $this->isInDB() ? $this->UseGZIP : true));
 
 		foreach ($hide as $field) {
 			$field->hideIf('RemoteHost')->isEqualTo('localhost');
@@ -74,71 +75,49 @@ class ReplicantActionDump extends ReplicantAction
 	}
 
 	/**
-	 * If server is 'localhost' then dump the local database to a local file for local people, otherwise call replicant/dump on the server specified.
+	 * Dump database to the local filesystem via mysqldump command and optionally gzipping output.
 	 *
-	 * @return bool
+	 * @SideEffects:
+	 *  Dumps database to local filesystem.
+	 *
+	 * @return bool true on success, false on fail
 	 * @throws PermissionFailureException
 	 */
 	public function execute()
 	{
-		// fails with exception if not allowed
-		$this->checkPerm();
+		$fullPath = FileSystemTools::build_path($this->Path, $this->FileName) . ($this->UseGZIP ? ".gz" : '');
 
-		if ($this->RemoteHost !== 'localhost') {
-			// if not on localhost then assemble a url which will trigger dump on remote host and read it as a page.
+		$this->step("Dumping database '$this->Database' to '$fullPath'");
+		// local server dump requested, create paths and dump the file.
+		if (!is_dir($this->Path)) {
+			// path doesn't exist, create it recursively
+			$this->step("Creating folder '$this->Path'");
+			if (!FileSystemTools::make_path($this->Path)) {
+				$this->failed("Failed to create path '$this->Path'");
+				return false;
+			};
+		}
 
-			$path = "replicant/dump";
-			$this->step("Dumping on remote system $this->Protocol://$this->UserName@$this->RemoteHost/$path")->output();
+		$excludeTables = '';
+		if (count(Replicant::config()->get('exclude_tables'))) {
+			$excludeTables = " --ignore-table=$this->Database." . implode(" --ignore-table=$this->Database.", Replicant::config()->get('exclude_tables')) . " ";
+		}
 
-			$transport = Replicant::transportFactory($this->Protocol, $this->RemoteHost, $this->UserName, $this->Password);
-			try {
-				$result = $transport->fetchPage($path);
-			} catch (Exception $e) {
-				$result = $e->getMessage();
-			}
-
-			// TODO SW better result checking here
-			$ok = (false !== strpos($result, 'Success'));
-			if ($ok) {
-				$this->success("Dumped Database on $this->Protocol://$this->UserName@$this->RemoteHost/$path")->output();
-			} else {
-				$this->failed("Failed calling $this->Protocol://$this->UserName@$this->RemoteHost/$path: $result")->output();
-			}
-
+		$command = sprintf("%s --host=%s --user=%s --password=%s %s %s %s %s",
+			Replicant::config()->get('path_to_mysqldump'),
+			DatabaseTools::getDBCredential('Server'),
+			DatabaseTools::getDBCredential('UserName'),
+			DatabaseTools::getDBCredential('Password'),
+			$excludeTables,
+			$this->Database,
+			$this->UseGZIP ? " | gzip > " : " > ",
+			$fullPath
+		);
+		$ok = $this->system($command, $retval);
+		if ($ok) {
+			$this->success("Dumped Database to $fullPath");
 		} else {
-			$fullPath = FileSystemTools::build_path($this->Path, $this->FileName);
-
-			$this->step("Dumping database '$this->Database' to '$fullPath'")->output();
-			// local server dump requested, create paths and dump the file.
-			if (!is_dir($this->Path)) {
-				// path doesn't exist, create it recursively
-				$this->step("Creating folder '$this->Path'")->output();
-				if (!FileSystemTools::make_path($this->Path)) {
-					$this->failed("Failed to create path '$this->Path'");
-					return false;
-				};
-			}
-
-			$excludeTables = '';
-			if (count(Replicant::config()->get('exclude_tables'))) {
-				$excludeTables = " --ignore-table=$this->Database." . implode(" --ignore-table=$this->Database.", Replicant::config()->get('exclude_tables')) . " ";
-			}
-
-			$command = sprintf("%s --host=%s --user=%s --password=%s %s %s > %s",
-				Replicant::config()->get('path_to_mysqldump'),
-				DatabaseTools::getDBCredential('Server'),
-				DatabaseTools::getDBCredential('UserName'),
-				DatabaseTools::getDBCredential('Password'),
-				$excludeTables,
-				$this->Database,
-				$fullPath
-			);
-			$ok = $this->system($command, $retval);
-			if ($ok) {
-				$this->success("Dumped Database to $this->FileName")->output();
-			} else {
-				$this->failed("Execute returned #$retval")->output();
-			}
+			$this->failed("Execute returned #$retval");
 		}
 		return $ok;
 	}

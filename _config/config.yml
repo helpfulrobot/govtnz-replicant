@@ -3,5 +3,11 @@ Name: Replicant
 ---
 Replicant:
   protocols:
-    http: http
     https: https
+    http: http
+#  remote_hosts:
+#    hostname/ip: "friendly name"
+
+
+#  proxies:
+#   - array of proxies which can be selected, e.g. 10.1.1.254 or 10.1.1.254:8888 or tcp://localhost:8888 (used verbatim)

@@ -6,7 +6,7 @@
  */
 class ReplicantActionFetch extends ReplicantAction
 {
-	protected static $action = 'Fetch';
+	protected static $action = 'FetchFile';
 	protected static $required_permission = ReplicantPermissions::RestoreDatabase;
 	private static $singular_name = 'Fetch Remote Files';
 
@@ -64,19 +64,21 @@ class ReplicantActionFetch extends ReplicantAction
 	/**
 	 * Fetch a file or if no FileName set all files found at remote location.
 	 *
+	 * @SideEffects:
+	 *  Writes files to local filesystem
+	 *
 	 * If all files then don't overwrite existing files, otherwise if a single file then overwrite it every time.
 	 *
-	 * @return int
-	 * @throws PermissionFailureException
+	 * @return int number of files fetched
 	 */
 	public function execute()
 	{
 		$this->checkPerm();
-		$transport = Replicant::transportFactory($this->Protocol, $this->RemoteHost, $this->UserName, $this->Password);
+		$transport = Replicant::transportFactory($this->Protocol, $this->RemoteHost, $this->Proxy, $this->UserName, $this->Password);
 
 		// if we have a FileName then only enqueue that file, otherwise get a list of files from remote host and enqueue all for fetching (existing files won't be refetched in this case).
 		if (!$this->FileName) {
-			$this->step("Fetching file list from '$this->Protocol://$this->UserName@$this->RemoteHost/$this->Path'")->output();
+			$this->step("Fetching file list from '$this->Protocol://$this->UserName@$this->RemoteHost/$this->Path'");
 			try {
 				$files = $transport->fetchFileList($this->Path);
 			} catch (Exception $e) {
@@ -85,7 +87,7 @@ class ReplicantActionFetch extends ReplicantAction
 			}
 		} else {
 			$fullPath = FileSystemTools::build_path($this->Path, $this->FileName);
-			$this->step("Enqueuing file '$fullPath'")->output();
+			$this->step("Enqueuing file '$fullPath'");
 			// create the files array as a single entry with path and name
 			$files = array(
 				array(
@@ -97,17 +99,17 @@ class ReplicantActionFetch extends ReplicantAction
 		$numFiles = count($files);
 		$numFetched = 0;
 
-		$this->step("Fetching #$numFiles files")->output();
+		$this->step("Fetching #$numFiles files");
 		foreach ($files as $fileInfo) {
 			// strip off extension here or alpha will reject request
 			$fileName = $fileInfo['FileName'];
 
-			$remotePathName = FileSystemTools::build_path(Replicant::config()->get('remote_path'), FileSystemTools::strip_extension(basename($fileName)));
+			$remotePathName = FileSystemTools::build_path(Replicant::config()->get('remote_path'), basename($fileName));
 			$localPathName = FileSystemTools::build_path(Replicant::asset_path(), $fileName);
 
 			$overwrite = ($this->FileName != '');
 
-			$this->step("Fetching file '$remotePathName' with overwrite (" . (($overwrite) ? "set" : "not set") . ")")->output();
+			$this->step("Fetching file '$remotePathName' with overwrite (" . (($overwrite) ? "set" : "not set") . ")");
 
 			try {
 				if (false !== $transport->fetchFile($remotePathName, $localPathName, $overwrite)) {
@@ -115,11 +117,12 @@ class ReplicantActionFetch extends ReplicantAction
 				}
 			} catch (Exception $e) {
 				$this->failed("Failed to fetch file '$remotePathName': " . $e->getMessage());
-				break;
+				// EARLY EXIT!
+				return false;
 			}
 
 		}
-		$this->success("Fetched #$numFetched files of #$numFiles")->output();
+		$this->success("Fetched #$numFetched files of #$numFiles");
 		return $numFetched;
 	}
 }

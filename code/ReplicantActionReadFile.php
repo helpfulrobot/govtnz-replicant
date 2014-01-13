@@ -61,17 +61,20 @@ class ReplicantActionReadFile extends ReplicantAction
 	/**
 	 * Read the file to the output buffer.
 	 *
+	 * SideEffects:
+	 *  Writes file contents to output buffer if found
+	 *
 	 * Path to file is hard-coded as Replicant::asset_path() setting.
 	 *
 	 * Content-Type returned is text/plain.
 	 *
-	 * @return bool result from readfile (bytes output to buffer)
+	 * @return bool|int result from readfile (bytes output to buffer or false if failed)
 	 */
 	public function execute()
 	{
 		$this->checkPerm();
 
-		$fullPath = FileSystemTools::build_path($this->Path, "$this->FileName.sql");
+		$fullPath = FileSystemTools::build_path($this->Path, "$this->FileName");
 		if (!file_exists($fullPath)) {
 			$this->failed("File '$fullPath' doesn't exist");
 			return false;

@@ -99,8 +99,35 @@ class ReplicantAddNewButtonHandler extends GridFieldDetailForm_ItemRequest
 			$this->record->update($data);
 //            $form->saveInto($this->record);
 			$this->record->write();
-			// now actually run the action
-			$ok = $this->record->execute();
+			// now actually run the action. If it is a dump action and the remote host is not localhost then we call dump on the remote host instead.
+
+			if (($this->record->ClassName != 'ReplicantActionDump')
+				|| ($this->record->RemoteHost == 'localhost')) {
+
+				$ok = $this->record->execute();
+			} else {
+				$transport = Replicant::transportFactory($this->record->Protocol, $this->record->RemoteHost, $this->record->Proxy, $this->record->UserName, $this->record->Password);
+
+				$path = "replicant/dump" . ($this->record->UseGZIP ? "&UseGZIP=1" : "");
+
+				$url = $transport->buildURL($path);
+
+				$this->record->step("Dumping on remote system $url");
+
+				try {
+					$result = $transport->fetchPage($path);
+				} catch (Exception $e) {
+					$result = $e->getMessage();
+				}
+
+				// TODO SW better result checking here
+				$ok = (false !== strpos($result, 'Success'));
+				if ($ok) {
+					$this->record->success("Dumped Database on $url: $result");
+				} else {
+					$this->record->failed("Failed calling $url: $result");
+				}
+			}
 
 			if ($ok) {
 				$link = '"' . $this->record->Title . '"';
@@ -157,20 +184,9 @@ class ReplicantAddNewButtonHandler extends GridFieldDetailForm_ItemRequest
 			}
 			return $responseNegotiator->respond($controller->getRequest());
 		}
-
-		if ($new_record) {
-			return Controller::curr()->redirect('/admin/replicantadmin/' . $this->record->ClassName);
-		} elseif ($this->gridField->getList()->byId($this->record->ID)) {
-			// Return new view, as we can't do a "virtual redirect" via the CMS Ajax
-			// to the same URL (it assumes that its content is already current, and doesn't reload)
-			return $this->edit(Controller::curr()->getRequest());
-		} else {
-			// Changes to the record properties might've excluded the record from
-			// a filtered list, so return back to the main view if it can't be found
-			$noActionURL = $controller->removeAction($data['url']);
-			$controller->getRequest()->addHeader('X-Pjax', 'Content');
-			return $controller->redirect($noActionURL, 302);
-		}
+		$noActionURL = $controller->removeAction($data['url']);
+		$controller->getRequest()->addHeader('X-Pjax', 'Content');
+		return $controller->redirect($noActionURL, 302);
 	}
 
 	public function Link($action = null)

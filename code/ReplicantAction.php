@@ -12,11 +12,12 @@ class ReplicantAction extends ProgressLogEntry
 	private static $db = array(
 		'Path' => 'Varchar(255)',
 		'FileName' => 'Varchar(255)', // most actions have an associated file name so track it
-		'RemoteHost' => 'Varchar(255)', // hostname action being called on, maybe local or remote
 		'Protocol' => 'Varchar(32)', // protocol used if remote call/transfer, might be e.g http/1.0 if local request
+		'RemoteHost' => 'Varchar(255)', // hostname action being called on, maybe local or remote
+		'Proxy' => 'Varchar(255)', // proxy may be needed within some environments
 		'Database' => 'Varchar(255)', // database being dumped/restored etc
 		'UserName' => 'Varchar(255)', // provided username for remote login
-		'Proxy' => 'Varchar(255)' // proxy may be needed within some environments
+		'UseGZIP' => 'Boolean'          // use gzip compression when saving database dump
 	);
 
 	private static $summary_fields = array(
@@ -27,6 +28,7 @@ class ReplicantAction extends ProgressLogEntry
 		'ResultMessage',
 		'ResultInfo',
 		'RemoteHost',
+		'Proxy',
 		'Database',
 		'UserName',
 		'FileName',
@@ -37,7 +39,7 @@ class ReplicantAction extends ProgressLogEntry
 	/**
 	 * Create an action.
 	 *
-	 * Unlike ProgressLogEntry which this class is derived from this doesn't immediately write to the database!
+	 * Important: Unlike parent class ProgressLogEntry this does not write the record to the database on create!
 	 *
 	 * @param null $action if not supplied then the derived class name
 	 * @param null $task if not supplied then the derived class config::$action
@@ -141,9 +143,9 @@ class ReplicantAction extends ProgressLogEntry
 	{
 		$hosts = Replicant::config()->get('remote_hosts');
 		if ($includeLocalHost) {
-			array_unshift($hosts, 'localhost');
+			$hosts = array('localhost' => 'localhost') + $hosts;
 		}
-		return array_combine($hosts, $hosts);
+		return $hosts;
 	}
 
 	/**
@@ -160,6 +162,4 @@ class ReplicantAction extends ProgressLogEntry
 		}
 		return $proxies;
 	}
-
-
 }

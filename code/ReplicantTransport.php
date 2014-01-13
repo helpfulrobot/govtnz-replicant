@@ -4,13 +4,15 @@ abstract class ReplicantTransport
 
 	protected $protocol;
 	protected $host;
+	protected $proxy;
 	protected $username;
 	protected $password;
 
-	public function __construct($protocol, $host, $username = null, $password = null)
+	public function __construct($protocol, $host, $proxy = null, $username = null, $password = null)
 	{
 		$this->protocol = TransportTools::parseProtocol($protocol);
 		$this->host = $host;
+		$this->proxy = $proxy;
 		$this->username = $username;
 		$this->password = $password;
 	}
@@ -34,7 +36,7 @@ abstract class ReplicantTransport
 	 * @param string $localPathName - e.g. assets/replicant/files
 	 * @param bool $overwrite
 	 * @param string $contentType
-	 * @return bool|null false if not written but ok, true if written or null on error
+	 * @return int|bool number of bytes written or false if failed
 	 * @throws Exception
 	 */
 	public function fetchFile($remotePathName, $localPathName, $overwrite = false, $contentType = '')
@@ -55,12 +57,8 @@ abstract class ReplicantTransport
 		if ($fileObject) {
 			// readFile will throw an exception on error so we'll not try and write a bad file
 			$written = $fileObject->fwrite($this->readFile($url, $contentType));
-			if (!is_null($written)) {
-				$fileObject->fflush();
-				$written = true;
-			}
 		}
-		return $written;
+		return ($written > 0) ? $written : false;
 	}
 
 

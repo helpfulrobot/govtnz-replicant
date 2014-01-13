@@ -29,6 +29,8 @@ class ReplicantController extends Controller
 
 	/**
 	 * List all replicant files. Requires login with ReplicantPermissions::RestoreDatabase permissions.
+	 *
+	 * We can't return anything here other than data as output is meaningful to caller.
 	 */
 	public function files(SS_HTTPRequest $request)
 	{
@@ -38,7 +40,7 @@ class ReplicantController extends Controller
 		} else {
 			$this->listFiles($request);
 		}
-		return true;
+		return '';
 	}
 
 	/**
@@ -55,11 +57,15 @@ class ReplicantController extends Controller
 		$options = CollectionTools::options_from_array(
 			$request->getVars(),
 			array(
+				'RemoteHost' => $request->getIP(),
 				'Path' => Replicant::asset_path(),
 				'FileName' => FileSystemTools::filename_from_timestamp('.sql'),
+				'UseGZIP' => false
 			)
 		);
-		return ReplicantActionDump::create()->checkPerm()->update($options)->execute();
+		$action = ReplicantActionDump::create();
+		$action->checkPerm()->update($options)->execute();
+		return $action->format();
 	}
 
 	/**
@@ -76,12 +82,14 @@ class ReplicantController extends Controller
 		$options = CollectionTools::options_from_array(
 			$request->getVars(),
 			array(
+				'RemoteHost' => $request->getIP(),
 				'Path' => Replicant::asset_path(),
 				'FileName' => null,
 			)
 		);
-		return ReplicantActionRestore::create()->checkPerm()->update($options)->execute();
-
+		$action = ReplicantActionRestore::create();
+		$action->checkPerm()->update($options)->execute();
+		return $action->format();
 	}
 
 	/**
@@ -92,9 +100,9 @@ class ReplicantController extends Controller
 	 * If filename is supplied as getVar then file will overwrite existing file.
 	 *
 	 * SideEffects:
-	 *  Outputs progress
 	 *  Reads files from remote system.
 	 *  Writes files to local filesystem.
+	 *  Outputs results
 	 *
 	 * @param SS_HTTPRequest $request
 	 * @return int number of files fetched
@@ -103,16 +111,50 @@ class ReplicantController extends Controller
 	public function fetch(SS_HTTPRequest $request)
 	{
 		$options = CollectionTools::options_from_array($request->getVars(), array(
-			'RemoteHost' => null,
+			'RemoteHost' => $request->getIP(),
 			'Path' => Replicant::asset_path(),
 			'FileName' => '',
 			'UserName' => null, // username to connect to remote server
 			'Password' => null, // password to connect to remote server
 		));
-
-		return ReplicantActionFetch::create()->checkPerm()->update($options)->execute();
-
+		$action = ReplicantActionFetch::create();
+		$action->checkPerm()->update($options)->execute();
+		return $action->format();
 	}
+
+	/**
+	 * Lists files either as json or as a list of anchors depending on Accept header containing application/json or other.
+	 *
+	 * SideEffects:
+	 *  outputs the response to output buffer, so can't echo ReplicantProgressLogEntry here.
+	 *
+	 * @param SS_HTTPRequest $request
+	 * @return the number of files listed
+	 */
+	protected function listFiles(SS_HTTPRequest $request)
+	{
+		return ReplicantActionListFiles::create()->checkPerm()->update(array())->execute($request->getAcceptMimetypes());
+	}
+
+	/**
+	 * Read a file and output its contents.
+	 *
+	 * SideEffects:
+	 *  Sets Content-Type: text/plain header.
+	 *  Outputs file contents to output buffer via readfile, so can't echo ReplicantProgressLogEntry here.
+	 *
+	 * @param SS_HTTPRequest $request
+	 * @internal param $id
+	 * @return bool|int false if fails, otherwise number of bytes read
+	 */
+	protected function readFile(SS_HTTPRequest $request)
+	{
+		$options = array(
+			'FileName' => $request->param('ID') . ($request->getExtension() ? '.' . $request->getExtension() : '')
+		);
+		return ReplicantActionReadFile::create()->checkPerm()->update($options)->execute();
+	}
+
 
 	/**
 	 * Show basic help.
@@ -130,37 +172,5 @@ class ReplicantController extends Controller
 	}
 
 
-	/**
-	 * Lists files either as json or as a list of anchors depending on Accept header containing application/json or other.
-	 *
-	 * SideEffects:
-	 *  outputs the response to output buffer, so can't echo ReplicantProgressLogEntry here.
-	 *
-	 * @param SS_HTTPRequest $request
-	 * @return the number of files listed
-	 */
-	protected function listFiles(SS_HTTPRequest $request)
-	{
-		ReplicantActionListFiles::create()->checkPerm()->update(array())->execute($request->getAcceptMimetypes());
-	}
-
-	/**
-	 * Read a file and output its contents.
-	 *
-	 * SideEffects:
-	 *  Sets Content-Type: text/plain header.
-	 *  Outputs file contents to output buffer via readfile, so can't echo ReplicantProgressLogEntry here.
-	 *
-	 * @param SS_HTTPRequest $request
-	 * @internal param $id
-	 * @return bool|int false if fails, otherwise number of bytes read
-	 */
-	protected function readFile(SS_HTTPRequest $request)
-	{
-		$options = array(
-			'FileName' => $request->param('ID')
-		);
-		ReplicantActionReadFile::create()->checkPerm()->update($options)->execute();
-	}
 
 }

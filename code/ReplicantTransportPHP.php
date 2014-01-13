@@ -25,9 +25,17 @@ class ReplicantTransportPHP extends ReplicantTransport
 		if ($this->username) {
 			$headers[] = "Authorization: Basic " . base64_encode("$this->username:$this->password");
 		}
-		$options = array();
+		$options = array(
+			'http' => array()
+		);
 		if (count($headers)) {
-			$options['http'] = array('header' => implode("\r\n", $headers));
+			$options['http'] += array('header' => implode("\r\n", $headers));
+		}
+		if ($this->proxy) {
+			$options['http'] += array(
+			      'proxy' => $this->proxy,
+			      'request_fulluri' => true
+			);
 		}
 		$context = stream_context_create($options);
 
@@ -36,7 +44,7 @@ class ReplicantTransportPHP extends ReplicantTransport
 			set_error_handler(function ($errno, $message, $file, $line) {
 				throw new ErrorException($message, $errno, $errno, $file, $line);
 			});
-			$result = file_get_contents($url, null, $context);
+			$result = file_get_contents("$url", null, $context);
 			if ($result === false) {
 				throw new ErrorException("file_get_contents returned false");
 			}
