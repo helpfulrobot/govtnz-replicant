@@ -6,6 +6,7 @@
 	"require": {
 			"php": ">=5.3",
 			"silverstripe/framework": ">=3.0",
+			"composer/installers": "dev-master",
 			"govtnz/progresslogentry": "dev-master",
 			"govtnz/transporttools": "dev-master",
 			"govtnz/databasetools": "dev-master",
@@ -15,27 +16,27 @@
 	"repositories": [
 		{
 			"type": "vcs",
-			"url": "https://github.com/govtnz/replicant"
+			"url": "git://github.com/govtnz/replicant"
 		},
 		{
 			"type": "vcs",
-			"url": "https://github.com/govtnz/progresslogentry"
+			"url": "git://github.com/govtnz/progresslogentry"
 		},
 		{
 			"type": "vcs",
-			"url": "https://github.com/govtnz/transporttools"
+			"url": "git://github.com/govtnz/transporttools"
 		},
 		{
 			"type": "vcs",
-			"url": "https://github.com/govtnz/databasetools"
+			"url": "git://github.com/govtnz/databasetools"
 		},
 		{
 			"type": "vcs",
-			"url": "https://github.com/govtnz/filesystemtools"
+			"url": "git://github.com/govtnz/filesystemtools"
 		},
 		{
 			"type": "vcs",
-			"url": "https://github.com/govtnz/collectiontools"
+			"url": "git://github.com/govtnz/collectiontools"
 		}
 	], 	
 	"authors": [
