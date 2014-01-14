@@ -3,12 +3,6 @@
     "description": "Module to replicate data between SilverStripe installations. Requires SilverStripe >= 3.0.",
     "homepage": "https://github.com/govtnz/replicant",
     "type": "silverstripe-module",
- 	"repositories": [
-		{
-			"type": "vcs",
-			"url": "https://github.com/govtnz/replicant"
-		}
-	],
 	"require": {
 			"php": ">=5.3",
 			"silverstripe/framework": ">=3.0",
@@ -18,6 +12,32 @@
 			"govtnz/filesystemtools": "dev-master",
 			"govtnz/collectiontools": "dev-master"
  	},
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/govtnz/replicant"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/govtnz/progresslogentry"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/govtnz/transporttools"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/govtnz/databasetools"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/govtnz/filesystemtools"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/govtnz/collectiontools"
+		}
+	], 	
 	"authors": [
  		{
  			"name": "wakes",
