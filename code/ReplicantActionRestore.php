@@ -15,7 +15,7 @@ class ReplicantActionRestore extends ReplicantAction
 	public function getCMSFields()
 	{
 		$fields = parent::getCMSFields();
-		$localFileNames = array_values(FilesystemTools::nodot_files(FileSystemTools::build_path(Director::baseFolder(), Replicant::config()->get('files_path'))));
+		$localFileNames = array_values(FileSystemTools::nodot_files(FileSystemTools::build_path(Director::baseFolder(), Replicant::config()->get('files_path'))));
 		$fields->addFieldToTab('Root.Main', new DropdownField('FileName', 'Database dump to restore', array_combine($localFileNames, $localFileNames)));
 		return $fields;
 	}
