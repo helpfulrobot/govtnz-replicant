@@ -2,6 +2,7 @@
     "name": "govtnz/replicant",
     "description": "Module to replicate data between SilverStripe installations. Requires SilverStripe >= 3.0.",
     "homepage": "https://github.com/govtnz/replicant",
+	"license": "BSD-3-Clause",
     "type": "silverstripe-module",
 	"require": {
 			"php": ">=5.3",
