@@ -2,6 +2,57 @@
 
 Module to replicate data between SilverStripe installations.
 
+## Installation
+
+The simplest way to install this module is with composer.
+
+Add these repositories to the repositories section of your project's composer.json file:
+
+	"repositories": [
+		{
+			"type": "vcs",
+			"url": "https://github.com/govtnz/replicant"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/govtnz/progresslogentry"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/govtnz/transporttools"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/govtnz/databasetools"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/govtnz/filesystemtools"
+		},
+		{
+			"type": "vcs",
+			"url": "https://github.com/govtnz/collectiontools"
+		}
+	]
+
+Once you have the repositories section in place, you need to add the dependency to the require section of your project's composer.json file:
+
+	"require": {
+		"govtnz/replicant": "1.0.1"
+	}
+
+Now to install you just need to run: `composer update govtnz/replicant`
+
+## Security
+
+**NOTE** the current version of replicant stores database dumps in the `assets/replicant` directory.
+It is highly recommended that you restrict access to this directory by adding a `.htaccess` file containing the following:
+
+	Order deny,allow
+	Deny from all
+
+If you do not put a restriction like this in place then your database dumps will be accessible to anyone that can view your website. This will be addressed in the next stable version of the module.
+
 ## Configuration
 
 See the replicant module _config.yml for settings which affect the way replicant behaves.
