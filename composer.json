@@ -5,14 +5,14 @@
 	"license": "BSD-3-Clause",
     "type": "silverstripe-module",
 	"require": {
-			"php": ">=5.3",
-			"silverstripe/framework": ">=3.0",
-			"composer/installers": "dev-master",
-			"govtnz/progresslogentry": "dev-master",
-			"govtnz/transporttools": "dev-master",
-			"govtnz/databasetools": "dev-master",
-			"govtnz/filesystemtools": "dev-master",
-			"govtnz/collectiontools": "dev-master"
+		"php": ">=5.3",
+		"silverstripe/framework": ">=3.0",
+		"composer/installers": "dev-master",
+		"govtnz/progresslogentry": "dev-master",
+		"govtnz/transporttools": "dev-master",
+		"govtnz/databasetools": "dev-master",
+		"govtnz/filesystemtools": "dev-master",
+		"govtnz/collectiontools": "dev-master"
  	},
 	"repositories": [
 		{
