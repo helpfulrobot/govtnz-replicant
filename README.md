@@ -38,7 +38,7 @@ Add these repositories to the repositories section of your project's composer.js
 Once you have the repositories section in place, you need to add the dependency to the require section of your project's composer.json file:
 
 	"require": {
-		"govtnz/replicant": "1.0.1"
+		"govtnz/replicant": "1.0.2"
 	}
 
 Now to install you just need to run: `composer update govtnz/replicant`
