@@ -15,32 +15,6 @@
 		"govtnz/collectiontools": "dev-master",
 		"unclecheese/display-logic": "dev-master"
  	},
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "git://github.com/govtnz/replicant"
-		},
-		{
-			"type": "vcs",
-			"url": "git://github.com/govtnz/progresslogentry"
-		},
-		{
-			"type": "vcs",
-			"url": "git://github.com/govtnz/transporttools"
-		},
-		{
-			"type": "vcs",
-			"url": "git://github.com/govtnz/databasetools"
-		},
-		{
-			"type": "vcs",
-			"url": "git://github.com/govtnz/filesystemtools"
-		},
-		{
-			"type": "vcs",
-			"url": "git://github.com/govtnz/collectiontools"
-		}
-	], 	
 	"authors": [
  		{
  			"name": "wakes",

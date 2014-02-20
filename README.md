@@ -4,44 +4,7 @@ Module to replicate data between SilverStripe installations.
 
 ## Installation
 
-The simplest way to install this module is with composer.
-
-Add these repositories to the repositories section of your project's composer.json file:
-
-	"repositories": [
-		{
-			"type": "vcs",
-			"url": "https://github.com/govtnz/replicant"
-		},
-		{
-			"type": "vcs",
-			"url": "https://github.com/govtnz/progresslogentry"
-		},
-		{
-			"type": "vcs",
-			"url": "https://github.com/govtnz/transporttools"
-		},
-		{
-			"type": "vcs",
-			"url": "https://github.com/govtnz/databasetools"
-		},
-		{
-			"type": "vcs",
-			"url": "https://github.com/govtnz/filesystemtools"
-		},
-		{
-			"type": "vcs",
-			"url": "https://github.com/govtnz/collectiontools"
-		}
-	]
-
-Once you have the repositories section in place, you need to add the dependency to the require section of your project's composer.json file:
-
-	"require": {
-		"govtnz/replicant": "1.0.2"
-	}
-
-Now to install you just need to run: `composer update govtnz/replicant`
+The simplest way to install this module is with composer:  `composer require govtnz/replicant`
 
 ## Security
 
